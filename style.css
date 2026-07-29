@@ -254,3 +254,113 @@ body {
 input[type="text"] { width: 80%; padding: 10px; background: #2b2b2b; border: 1px solid #444; color: white; border-radius: 6px; margin-bottom: 10px; }
 .action-btn { background: #007bff; color: white; border: none; padding: 12px 24px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 85%; transition: 0.2s; }
 .action-btn:hover { background: #0056b3; transform: scale(1.05); }
+
+/* --- TEMA RENK PALETLERİ --- */
+
+/* 1. Klasik Yeşil (Varsayılan) */
+body.theme-classic-green {
+    background-color: #121212;
+}
+body.theme-classic-green .poker-table {
+    background: radial-gradient(circle, #1b4d3e 0%, #0d281e 100%);
+    border-color: #2e7d32;
+}
+
+/* 2. Cyberpunk Neon (Mor / Neon Mavi) */
+body.theme-cyberpunk-neon {
+    background-color: #0b001a;
+}
+body.theme-cyberpunk-neon .poker-table {
+    background: radial-gradient(circle, #3c096c 0%, #10002b 100%);
+    border-color: #00f5d4;
+    box-shadow: 0 0 20px rgba(0, 245, 212, 0.3);
+}
+body.theme-cyberpunk-neon .timer-banner {
+    background: #7209b7 !important;
+    border: 1px solid #00f5d4;
+}
+
+/* 3. Obsidian Siyah / Gümüş */
+body.theme-obsidian-silver {
+    background-color: #050505;
+}
+body.theme-obsidian-silver .poker-table {
+    background: radial-gradient(circle, #222222 0%, #0a0a0a 100%);
+    border-color: #c0c0c0;
+    box-shadow: 0 0 15px rgba(192, 192, 192, 0.2);
+}
+body.theme-obsidian-silver .timer-banner {
+    background: #333333 !important;
+    border: 1px solid #c0c0c0;
+}
+
+/* TROL BUTONLARI STİLİ */
+.react-btn, .sound-btn {
+    background: #222;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+.react-btn:hover, .sound-btn:hover {
+    background: #444;
+    border-color: #ffc107;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(10px); }
+    15% { opacity: 1; transform: translateY(0); }
+    85% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-10px); }
+}
+
+/* --- ORTA-ALT TEMA SEÇİCİ KONUMU --- */
+.theme-selector-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 20, 20, 0.85);
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    z-index: 9999;
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+.theme-selector-container label {
+    color: #ffc107;
+    font-size: 11px;
+    display: block;
+    margin-bottom: 4px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.theme-buttons-flex {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.theme-btn {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.1s ease;
+}
+
+.theme-btn:hover {
+    transform: scale(1.05);
+}
+.player-seat.non-duelist {
+    opacity: 0.4 !important;
+    filter: grayscale(100%);
+}

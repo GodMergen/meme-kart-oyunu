@@ -1,4 +1,4 @@
-// server.js - Oyunun Canlı Beyni
+// server.js - Uzatma Düellosu, VIP Kurucu ve Yayıncı Modu Entegreli
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
@@ -33,7 +33,9 @@ function startRoomTimer(roomCode) {
     if (!room) return;
 
     if (room.timerInterval) clearInterval(room.timerInterval);
-    room.timeLeft = 30;
+    room.timeLeft = 15; 
+
+    io.to(roomCode).emit('timerTick', { timeLeft: room.timeLeft });
 
     room.timerInterval = setInterval(() => {
         room.timeLeft--;
@@ -51,6 +53,9 @@ function revealCardsAndStartVoting(roomCode) {
     if (!room || room.gameState !== "PLAYING") return;
 
     room.players.forEach(player => {
+        // Düello turundaysak ve bu oyuncu düellocu değilse ondan kart beklemiyoruz
+        if (room.isDuelRound && !room.duelists.includes(player.id)) return;
+
         const hasSubmitted = room.submittedCards.some(c => c.playerId === player.id);
         if (!hasSubmitted && player.cards.length > 0) {
             const autoCard = player.cards[0];
@@ -80,12 +85,19 @@ function sendTableState(roomCode) {
 
     io.to(roomCode).emit('tableStateUpdated', {
         gameState: room.gameState,
+        roundCount: room.roundCount,
         situation: room.currentSituation,
         players: room.players,
+        spectators: room.spectators,
+        creatorId: room.creator, // 👑 VIP durumu için kurucu ID'sini gönderiyoruz
         submittedCardsCount: room.submittedCards.length,
         submittedCardPlayerIds: room.submittedCards.map(c => c.playerId),
         votingCards: room.gameState === "VOTING" || room.gameState === "RESULTS" ? room.shuffledVotingCards : [],
-        winnerData: room.winnerData || null
+        winnerData: room.winnerData || null,
+        leaderboardData: room.leaderboardData || null,
+        isDuelRound: room.isDuelRound || false, // ⚔️ Düello durumu
+        duelists: room.duelists || [],
+        duelData: room.duelData || null
     });
 }
 
@@ -103,8 +115,11 @@ io.on('connection', (socket) => {
             submittedVotes: 0,
             votedPlayers: [], 
             roundCount: 0,    
-            timeLeft: 30,
-            winnerData: null
+            timeLeft: 15,
+            winnerData: null,
+            leaderboardData: null,
+            isDuelRound: false,
+            duelists: []
         };
         socket.join(roomCode);
         socket.emit('roomCreated', { roomCode: roomCode });
@@ -133,7 +148,6 @@ io.on('connection', (socket) => {
                 socket.emit('gameStartedDirect', { roomCode: roomCode });
                 sendTableState(roomCode);
             }
-
         } else {
             socket.emit('error', { message: "Oda bulunamadi!" });
         }
@@ -142,16 +156,19 @@ io.on('connection', (socket) => {
     socket.on('startGame', (data) => {
         const room = rooms[data.roomCode];
         if (!room) return;
-
-        // 🎯 YENİ GÜVENLİK DUVARI: Sadece oda kurucusu yeni tur başlatabilir!
         if (room.creator !== socket.id) return;
+
+        // Eğer oyun düello anonsundan gelmiyorsa normal tur sayısını artır
+        if (room.gameState !== "DUEL_ANNOUNCEMENT") {
+            room.roundCount += 1; 
+        }
 
         room.gameState = "PLAYING";
         room.submittedCards = [];
         room.submittedVotes = 0;
         room.votedPlayers = []; 
         room.winnerData = null;
-        room.roundCount += 1; 
+        room.leaderboardData = null;
 
         const situationPool = [
             "Sabah alarmı kapatıp 5 dakika daha uyuyunca geçen o yarım saat...",
@@ -168,9 +185,11 @@ io.on('connection', (socket) => {
             if (!player.cards) player.cards = [];
             player.hasDrawnThisRound = false; 
             
-            if (room.roundCount === 1) {
+            if (player.cards.length === 0) {
                 let shuffledDeck = shuffle([...MEME_KUTUPHANESI]);
-                player.cards = shuffledDeck.slice(0, 5); 
+                player.cards = shuffledDeck.slice(0, 5).map((card, idx) => {
+                    return { id: Date.now() + idx + Math.random(), color: card.color, icon: card.icon, text: card.text };
+                });
             } 
             io.to(player.id).emit('yourHandUpdated', { cards: player.cards });
         });
@@ -182,6 +201,12 @@ io.on('connection', (socket) => {
     socket.on('drawCard', (data) => {
         const room = rooms[data.roomCode];
         if (!room || room.gameState !== "PLAYING") return;
+        
+        // Düello turundaysak sadece düellocular kart çekebilir
+        if (room.isDuelRound && !room.duelists.includes(socket.id)) {
+            socket.emit('localError', { message: "Uzatma düellosundasınız! Sadece düellocular kart çekebilir." }); return;
+        }
+
         const player = room.players.find(p => p.id === socket.id);
         if (!player) return;
 
@@ -192,14 +217,22 @@ io.on('connection', (socket) => {
             socket.emit('localError', { message: "Eliniz dolu! Önce bir kart atmalısınız." }); return;
         }
 
-        player.cards.push(MEME_KUTUPHANESI[Math.floor(Math.random() * MEME_KUTUPHANESI.length)]);
+        const templateCard = MEME_KUTUPHANESI[Math.floor(Math.random() * MEME_KUTUPHANESI.length)];
+        player.cards.push({ id: Date.now() + Math.random(), color: templateCard.color, icon: templateCard.icon, text: templateCard.text });
         player.hasDrawnThisRound = true; 
+        
         socket.emit('yourHandUpdated', { cards: player.cards });
     });
 
     socket.on('playCard', (data) => {
         const room = rooms[data.roomCode];
         if (!room || room.gameState !== "PLAYING") return;
+        
+        // Düello kısıtlaması
+        if (room.isDuelRound && !room.duelists.includes(socket.id)) {
+            socket.emit('localError', { message: "Bu bir düello! Sadece savaşanlar kart atabilir." }); return;
+        }
+
         const player = room.players.find(p => p.id === socket.id);
         if (!player) return;
         if (room.submittedCards.some(c => c.playerId === socket.id)) return;
@@ -221,7 +254,9 @@ io.on('connection', (socket) => {
         socket.emit('yourHandUpdated', { cards: player.cards });
         sendTableState(data.roomCode);
 
-        if (room.submittedCards.length === room.players.length) {
+        // Beklenen kart sayısı düelloya göre değişir
+        const expectedCards = room.isDuelRound ? room.duelists.length : room.players.length;
+        if (room.submittedCards.length === expectedCards) {
             clearInterval(room.timerInterval);
             revealCardsAndStartVoting(data.roomCode);
         }
@@ -264,13 +299,11 @@ io.on('connection', (socket) => {
                 const winnerPlayer = room.players.find(p => p.id === wCard.playerId);
                 if (winnerPlayer) winnerPlayer.score += 1;
             });
-
             sWinningCards.forEach(wCard => {
                 const winnerPlayer = room.players.find(p => p.id === wCard.playerId);
                 if (winnerPlayer) winnerPlayer.score += 1;
             });
 
-            room.gameState = "RESULTS";
             room.winnerData = {
                 pWinnerName: pWinningCards.map(c => c.playerName).join(" ve ") || null,
                 pVotes: maxPVotes,
@@ -278,11 +311,62 @@ io.on('connection', (socket) => {
                 sVotes: maxSVotes
             };
 
+            // 🎯 LİDERLİK TABLOSU VE DÜELLO (SUDDEN DEATH) HESAPLAMASI
+            let sorted = [...room.players].sort((a, b) => b.score - a.score);
+            let topScore = sorted[0].score;
+            let tiedPlayers = sorted.filter(p => p.score === topScore);
+
+            // Eğer normal bir 10 turun sonundaysak VEYA önceki bir düello yine berabere bittiyse:
+            if ((room.roundCount % 10 === 0 || room.isDuelRound) && tiedPlayers.length > 1) {
+                room.gameState = "DUEL_ANNOUNCEMENT";
+                room.isDuelRound = true;
+                room.duelists = tiedPlayers.map(p => p.id);
+                room.duelData = { names: tiedPlayers.map(p => p.name) };
+            } 
+            // Eğer 10 turun sonundaysak ve beraberlik yoksa (veya düello ile bozulduysa):
+            else if (room.roundCount % 10 === 0 || room.isDuelRound) {
+                room.gameState = "LEADERBOARD";
+                room.leaderboardData = sorted;
+                room.isDuelRound = false; 
+                room.duelists = [];
+            } else {
+                room.gameState = "RESULTS";
+            }
+
             sendTableState(data.roomCode);
         }
+    });
+
+    socket.on('sendReaction', (data) => {
+        const roomCode = data.roomCode;
+        const room = rooms[roomCode];
+        if (!room) return;
+        let senderName = "Biri";
+        const foundP = room.players.find(p => p.id === socket.id);
+        const foundS = room.spectators.find(s => s.id === socket.id);
+        if (foundP) senderName = foundP.name;
+        else if (foundS) senderName = foundS.name;
+
+        io.to(roomCode).emit('receiveReaction', {
+            senderId: socket.id,
+            senderName: senderName,
+            type: data.type,
+            value: data.value 
+        });
+    });
+
+    socket.on('returnToLobby', (data) => {
+        const room = rooms[data.roomCode];
+        if (!room || room.creator !== socket.id) return;
+        room.gameState = "LOBBY";
+        room.roundCount = 0;
+        room.isDuelRound = false;
+        room.players.forEach(p => { p.score = 0; p.cards = []; });
+        io.to(data.roomCode).emit('roomUpdated', room);
+        sendTableState(data.roomCode);
     });
 });
 
 http.listen(3000, () => {
-    console.log('=== MOTOR YENIDEN CALISTI ===');
+    console.log('=== DÜELLO, VIP VE GİZLİ KOD SİSTEMİ AKTİF ===');
 });
