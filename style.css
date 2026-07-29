@@ -1,0 +1,256 @@
+body {
+    background-color: #141414;
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    user-select: none;
+}
+
+/* Stüdyo Katmanı */
+.studio-layer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    padding-top: 15px;
+}
+
+.timer-banner {
+    background: #dc3545;
+    color: white;
+    padding: 8px 25px;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 30px;
+    box-shadow: 0 0 15px rgba(220, 53, 69, 0.4);
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+
+/* ⭕ ANA POKER MASASI */
+.poker-table {
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, #1b4d22 40%, #0f3014 90%);
+    border: 20px solid #3d2314;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.9), inset 0 0 40px rgba(0,0,0,0.7);
+    margin-top: 20px;
+}
+
+.table-center {
+    width: 260px;
+    height: 260px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    box-sizing: border-box;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px dashed #444;
+    transition: all 0.4s ease;
+}
+
+.table-center h2 {
+    font-size: 13px;
+    color: #ffc107;
+    margin: 0 0 5px 0;
+    letter-spacing: 1px;
+}
+
+.table-center p {
+    font-size: 14px;
+    margin: 0;
+    color: #fff;
+    font-weight: bold;
+    line-height: 1.3;
+}
+
+/* ✨ YENİ: Gümüş & Siyah Zafer Parlaması */
+@keyframes popInGlow {
+    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+    80% { transform: translate(-50%, -50%) scale(1.05); }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+.winner-silver-glow {
+    background: linear-gradient(145deg, #0a0a0a, #1a1a1a) !important;
+    border: 3px solid #c0c0c0 !important;
+    box-shadow: 0 0 30px rgba(192, 192, 192, 0.4), inset 0 0 15px rgba(0, 0, 0, 0.9) !important;
+    animation: popInGlow 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+/* 🪑 OYUNCU KOLTUKLARI */
+.player-seat {
+    position: absolute;
+    width: 100px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    background: #222;
+    padding: 6px;
+    border-radius: 8px;
+    border: 2px solid #555;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    z-index: 5;
+    transition: all 0.3s;
+}
+.player-seat.submitted {
+    border-color: #ffc107;
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+}
+
+/* 🎴 MASAYA ATILAN KARTLARIN YUVASI */
+.table-card-slot {
+    position: absolute;
+    width: 80px;
+    height: 115px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px dashed #666;
+    border-radius: 6px;
+    z-index: 4;
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.table-card-slot.has-card {
+    border: 2px solid #ffc107;
+    background: #333;
+}
+
+.table-card-slot.back-flipped {
+    background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%);
+    border: 2px solid #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+}
+
+/* ✨ YENİ: Kartların 3D Açılma Animasyonu */
+@keyframes cardFlip {
+    0% { transform: perspective(600px) rotateY(90deg) scale(0.8); opacity: 0; }
+    100% { transform: perspective(600px) rotateY(0deg) scale(1); opacity: 1; }
+}
+.flip-animation {
+    animation: cardFlip 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.table-card-slot .card-caption {
+    font-size: 10px;
+    padding: 4px;
+    text-align: center;
+    background: #111;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 📦 ORTAK KART ÇEKME DESTESİ */
+.main-deck-pile {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    width: 70px;
+    height: 95px;
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    border: 3px solid #fff;
+    border-radius: 8px;
+    box-shadow: -2px 2px 0 #888, -4px 4px 0 #666, -6px 6px 10px rgba(0,0,0,0.6);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 12px;
+    color: black;
+    z-index: 8;
+    transition: 0.1s;
+}
+
+.main-deck-pile:active {
+    transform: translate(-2px, 2px) scale(0.95);
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+/* 🃏 ALTAKİ OYUNCU ELİ DOCK ALANI */
+.player-hand-dock {
+    position: fixed;
+    bottom: 15px;
+    width: 85%;
+    max-width: 850px;
+    background: rgba(25, 25, 25, 0.95);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #444;
+    box-shadow: 0 -5px 25px rgba(0,0,0,0.6);
+    text-align: center;
+    z-index: 100;
+}
+
+.cards-flex {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 8px;
+    min-height: 120px;
+}
+
+.meme-card {
+    width: 100px;
+    background: #2a2a2a;
+    border: 2px solid #444;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.meme-card:hover {
+    transform: translateY(-10px);
+    border-color: #ffc107;
+    box-shadow: 0 10px 15px rgba(0,0,0,0.5);
+}
+
+.card-text-node {
+    padding: 4px;
+    font-size: 10px;
+    background: #1e1e1e;
+    min-height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.welcome-container {
+    background: #1f1f1f;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    width: 400px;
+}
+.menu-buttons button {
+    background: #2a2a2a; color: white; border: 1px solid #444;
+    padding: 8px 12px; margin: 4px; border-radius: 6px; cursor: pointer;
+}
+.menu-buttons button:hover { background: #ffc107; color: black; }
+input[type="text"] { width: 80%; padding: 10px; background: #2b2b2b; border: 1px solid #444; color: white; border-radius: 6px; margin-bottom: 10px; }
+.action-btn { background: #007bff; color: white; border: none; padding: 12px 24px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 85%; transition: 0.2s; }
+.action-btn:hover { background: #0056b3; transform: scale(1.05); }

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meme Kart Oyunu</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="welcome-container" id="welcomeScreen">
+        <h1>🎭 MEME KART OYUNU 🎭</h1>
+        
+        <div class="menu-buttons">
+            <button onclick="showSection('create')">Oda Kur</button>
+            <button onclick="showSection('join')">Odaya Katıl</button>
+            <button onclick="showSection('rules')">Kurallar</button>
+            <button onclick="showSection('credits')">Yapımcı</button>
+        </div>
+
+        <hr>
+
+        <!-- 1. Oda Kur Sekmesi -->
+        <div id="create" class="section active">
+            <h2>Oda Kur</h2>
+            <input type="text" id="createPlayerName" placeholder="Adını Yaz...">
+            <button class="action-btn" onclick="createRoom()">Odayı Oluştur</button>
+        </div>
+
+        <!-- 2. Odaya Katıl Sekmesi -->
+        <div id="join" class="section" style="display: none;">
+            <h2>Odaya Katıl</h2>
+            <input type="text" id="joinPlayerName" placeholder="Adını Yaz..."><br><br>
+            <input type="text" id="joinRoomCode" placeholder="Oda Kodu (Örn: ODA-1234)">
+            
+            <div class="role-selection" style="margin: 15px 0;">
+                <label><input type="radio" name="playerRole" value="player" checked> Oyuncu Ol</label>
+                <label><input type="radio" name="playerRole" value="spectator"> İzleyici Ol</label>
+            </div>
+            <button class="action-btn" id="joinBtn" onclick="joinRoom()">Odaya Giriş Yap</button>
+        </div>
+
+        <!-- 3. Kurallar Sekmesi -->
+        <div id="rules" class="section" style="display: none;">
+            <h2>Oyun Kuralları</h2>
+            <p>1. Her tur kütüphaneden rastgele bir komik durum cümlesi seçilir.</p>
+            <p>2. Oyuncular ellerindeki meme kartlarından bu cümleye en uygun olanını ortaya atar.</p>
+        </div>
+
+        <!-- 4. Yapımcı Sekmesi -->
+        <div id="credits" class="section" style="display: none;">
+            <h2>Yapımcı</h2>
+            <p>Bu harika oyun <strong>GodMergen</strong> tarafından geliştirilmiştir. 😎</p>
+        </div>
+    </div>
+
+    <!-- Bağlantı Kabloları -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
