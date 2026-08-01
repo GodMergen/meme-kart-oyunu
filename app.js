@@ -469,28 +469,16 @@ socket.on('tableStateUpdated', (state) => {
     renderMyHand(state.isDuelRound, state.duelists); 
 });
 
-function renderMyHand() {
+function renderMyHand(isDuelRound = false, duelists = []) {
     const dock = document.getElementById('handDockZone');
     if (!dock) return;
-    if (myRole !== 'player') { dock.innerHTML = "İzleyici Modu"; return; }
 
-    // Eldeki kartların boyutları tam %30 artırıldı (Genişlik: 104px, Yükseklik: 150px)
-    dock.innerHTML = `
-        <h4>Senin Kartların (${myCurrentCards.length}/5)</h4>
-        <div class="cards-flex">
-            ${myCurrentCards.map(card => `
-                <div class="meme-card" onclick="playCardDirect(${card.id})" style="width:104px; height:150px; background:#222; border-radius:6px; overflow:hidden; display:inline-block; cursor:pointer;">
-                    <img src="${card.url}" style="width:100%; height:98px; object-fit:cover;">
-                    <div style="font-size:10px; color:#fff; height:46px; overflow:hidden; padding: 4px; display:flex; align-items:center; justify-content:center; text-align:center;">${card.text}</div>
-                </div>
-            `).join('')}
-        </div>
-    `;
-}
+    if (myRole !== 'player') { 
         let specMsg = "Masadaki hareketleri yukardan izliyorsunuz.";
         if (currentGameState === "VOTING") specMsg = "✨ OYLAMA BAŞLADI! Masadaki kartlara tıklayarak oy verin!";
         dock.innerHTML = `<h3 style="color: #ffc107; margin:0;">🎥 Canlı İzleyici Stüdyosu</h3><p style="margin:0; font-size:12px; color:#aaa; margin-top:5px;">${specMsg}</p>`;
-        return;
+        return; 
+    }
 
     if (currentGameState === "PLAYING" && isDuelRound && !duelists.includes(socket.id)) {
         dock.innerHTML = `<h3 style="color: #dc3545; margin:0;">⚔️ UZATMA DÜELLOSUNU İZLİYORSUNUZ!</h3><p style="margin:0; font-size:12px; color:#aaa; margin-top:5px;">Sadece düellocular kart atabilir.</p>`;
@@ -499,20 +487,22 @@ function renderMyHand() {
         return;
     }
 
+    // Eldeki kartların boyutları tam %30 artırıldı
     dock.innerHTML = `
         <h4 style="margin: 0; color: #ffc107; font-size:13px;">🃏 Senin Kartların - Kart Sayısı: ${myCurrentCards.length}/5</h4>
         <div class="cards-flex">
             ${myCurrentCards.map(card => `
-                <div class="meme-card" onclick="playCardDirect(${card.id})" style="cursor:pointer; width:80px; height:115px; background:#222; border-radius:5px; overflow:hidden; display:inline-block; border:1px solid #444; text-align:center;">
-                    <div style="width: 100%; height: 75px; background: ${card.color}; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                        <img src="${card.url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/80?text=Meme'">
+                <div class="meme-card" onclick="playCardDirect(${card.id})" style="cursor:pointer; width:104px; height:150px; background:#222; border-radius:6px; overflow:hidden; display:inline-block; border:1px solid #444; text-align:center;">
+                    <div style="width: 100%; height: 98px; background: ${card.color}; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <img src="${card.url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/104?text=Meme'">
                     </div>
-                    <div class="card-text-node" style="font-size:9px; color:#fff; padding:2px; height:34px; overflow:hidden;">${card.text}</div>
+                    <div class="card-text-node" style="font-size:10px; color:#fff; padding:4px; display:flex; align-items:center; justify-content:center; text-align:center; height:46px; overflow:hidden;">${card.text}</div>
                 </div>
             `).join('')}
         </div>
     `;
     
+    // Kart oynandıysa veya oyun oynama durumunda değilse kartları pasifleştir
     if (currentGameState !== "PLAYING" || iHaveSubmittedCard) {
         dock.style.pointerEvents = 'none';
         dock.style.opacity = '0.4';
@@ -520,6 +510,7 @@ function renderMyHand() {
         dock.style.pointerEvents = 'auto';
         dock.style.opacity = '1';
     }
+}
 
 function playCardDirect(cardId) {
     if(document.getElementById('handDockZone')) {
