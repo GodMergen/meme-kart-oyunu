@@ -186,7 +186,56 @@ io.on('connection', (socket) => {
         socket.join(roomCode);
         socket.emit('roomCreated', { roomCode: roomCode });
     });
+// Oyuncu bağlantısı koptuğunda veya sayfayı kapattığında çalışır
+    socket.on('disconnect', () => {
+        for (const roomCode in rooms) {
+            let room = rooms[roomCode];
+            if (!room) continue;
 
+            // Oyuncu dizisinden çıkar
+            let pIndex = room.players.findIndex(p => p.id === socket.id);
+            if (pIndex !== -1) {
+                room.players.splice(pIndex, 1);
+                
+                // Eğer çıkan kişi kurucu ise, yeni kurucu ata
+                if (room.creator === socket.id) {
+                    if (room.players.length > 0) {
+                        room.creator = room.players[0].id; // Kalan ilk oyuncuyu kurucu yap
+                    } else if (room.spectators.length > 0) {
+                        room.creator = room.spectators[0].id; // Oyuncu yoksa izleyiciyi kurucu yap
+                    }
+                }
+                io.to(roomCode).emit('roomUpdated', room);
+                break;
+            }
+
+            // İzleyici dizisinden çıkar
+            let sIndex = room.spectators.findIndex(s => s.id === socket.id);
+            if (sIndex !== -1) {
+                room.spectators.splice(sIndex, 1);
+                if (room.creator === socket.id) {
+                    if (room.players.length > 0) {
+                        room.creator = room.players[0].id;
+                    } else if (room.spectators.length > 0) {
+                        room.creator = room.spectators[0].id;
+                    }
+                }
+                io.to(roomCode).emit('roomUpdated', room);
+                break;
+            }
+        }
+    });
+    // Oyuncu VIP tema değiştirdiğinde odadakilere bildir
+    socket.on('updateVipTheme', (data) => {
+        const room = rooms[data.roomCode];
+        if (room) {
+            const player = room.players.find(p => p.id === socket.id);
+            if (player) {
+                player.vipTheme = data.vipTheme; // Oyuncunun verisine tema kaydedilir
+                io.to(data.roomCode).emit('roomUpdated', room); // Odayı güncellenmiş haliyle herkese yansıt
+            }
+        }
+    });
     socket.on('joinRoom', (data) => {
         const roomCode = data.roomCode;
         if (rooms[roomCode]) {

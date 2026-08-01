@@ -30,6 +30,11 @@ function setVipTheme(vipClassName) {
     document.body.classList.remove('vip-gold', 'vip-silver', 'vip-red');
     document.body.classList.add(vipClassName);
     localStorage.setItem('memeGameVipTheme', vipClassName);
+
+    // 🚀 Eğer bir odadaysak, seçtiğimiz VIP temayı sunucuya bildiriyoruz ki herkes görsün
+    if (currentRoomCode) {
+        socket.emit('updateVipTheme', { roomCode: currentRoomCode, vipTheme: vipClassName });
+    }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -468,7 +473,9 @@ const pool = document.getElementById('seatsAndSlotsPool');
         const cX = Math.round(centerOffset + radiusCard * Math.cos(angle) - 46);
         const cY = Math.round(centerOffset + radiusCard * Math.sin(angle) - 66);
 
-        pool.innerHTML += `<div class="player-seat" style="left:${sX}px; top:${sY}px;">${player.name} (${player.score}P)</div>`;
+        // Oyuncunun seçtiği VIP temayı alıyoruz (Eğer seçmediyse varsayılan vip-gold olur)
+const pVipClass = player.vipTheme || 'vip-gold';
+pool.innerHTML += `<div class="player-seat ${pVipClass}" style="left:${sX}px; top:${sY}px;">${player.name} (${player.score}P)</div>`;;
 
         // Masadaki kartların boyutu %15 daha büyütüldü (Genişlik: ~106px, Yükseklik: ~152px)
         if (state.gameState === "PLAYING" && state.submittedCardPlayerIds.includes(player.id)) {
