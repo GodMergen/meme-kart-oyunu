@@ -25,9 +25,19 @@ function setTheme(themeName) {
     document.body.classList.add(`theme-${themeName}`);
     localStorage.setItem('memeGameTheme', themeName);
 }
+
+function setVipTheme(vipClassName) {
+    document.body.classList.remove('vip-gold', 'vip-silver', 'vip-red');
+    document.body.classList.add(vipClassName);
+    localStorage.setItem('memeGameVipTheme', vipClassName);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('memeGameTheme') || 'classic-green';
     setTheme(savedTheme);
+
+    const savedVip = localStorage.getItem('memeGameVipTheme') || 'vip-gold';
+    setVipTheme(savedVip);
 });
 
 function playSound(type) {
@@ -157,11 +167,15 @@ socket.on('roomCreated', (data) => {
 function joinRoom() {
     const playerName = document.getElementById('joinPlayerName').value;
     const roomCode = document.getElementById('joinRoomCode').value.trim().toUpperCase();
-    const roleRadio = document.querySelector('input[name="playerRole"]:checked').value;
+    const roleRadio = document.querySelector('input[name="playerRole"]:checked');
 
-    if (!playerName || !roomCode) { alert("Lütfen tüm alanları doldurun!"); return; }
+    if (!playerName || !roomCode || !roleRadio) { 
+        alert("Lütfen adını ve oda kodunu doldur!"); 
+        return; 
+    }
+    
     currentRoomCode = roomCode;
-    myRole = roleRadio;
+    myRole = roleRadio.value;
     
     if (audioCtx.state === 'suspended') audioCtx.resume();
     socket.emit('joinRoom', { roomCode: roomCode, playerName: playerName, asSpectator: (myRole === 'spectator') });
@@ -432,12 +446,11 @@ socket.on('tableStateUpdated', (state) => {
         }
     }
 
-    const pool = document.getElementById('seatsAndSlotsPool');
+const pool = document.getElementById('seatsAndSlotsPool');
     if (!pool) return;
     pool.innerHTML = '';
     
     // 🚀 MASAYI KİLİTTEN KURTARAN HAYATİ KODLAR:
-    // Her yeni turda veya ekranda masanın tıklanabilirliğini sıfırlar
     pool.style.pointerEvents = 'auto'; 
     pool.style.opacity = '1';
 
@@ -450,7 +463,6 @@ socket.on('tableStateUpdated', (state) => {
     state.players.forEach((player, index) => {
         const angle = (index * (360 / total)) * (Math.PI / 180);
         
-        // %15 Büyütülmüş pozisyonlamalar
         const sX = Math.round(centerOffset + radiusSeat * Math.cos(angle) - 58); 
         const sY = Math.round(centerOffset + radiusSeat * Math.sin(angle) - 20);
         const cX = Math.round(centerOffset + radiusCard * Math.cos(angle) - 46);
@@ -458,15 +470,15 @@ socket.on('tableStateUpdated', (state) => {
 
         pool.innerHTML += `<div class="player-seat" style="left:${sX}px; top:${sY}px;">${player.name} (${player.score}P)</div>`;
 
-        // Masadaki kartların boyutu %15 artırıldı (Genişlik: 92px, Yükseklik: 132px)
+        // Masadaki kartların boyutu %15 daha büyütüldü (Genişlik: ~106px, Yükseklik: ~152px)
         if (state.gameState === "PLAYING" && state.submittedCardPlayerIds.includes(player.id)) {
-            pool.innerHTML += `<div class="table-card-slot back-flipped" style="left:${cX}px; top:${cY}px; width:92px; height:132px;"></div>`;
+            pool.innerHTML += `<div class="table-card-slot back-flipped" style="left:${cX}px; top:${cY}px; width:106px; height:152px;"></div>`;
         } else if ((state.gameState === "VOTING" || state.gameState === "RESULTS") && state.votingCards[index]) {
             const vCard = state.votingCards[index];
             pool.innerHTML += `
-                <div class="table-card-slot has-card" style="left:${cX}px; top:${cY}px; width:92px; height:132px; cursor:pointer;" onclick="voteForCardOnTable('${vCard.submitId}')">
-                    <img src="${vCard.card.url}" style="width:100%; height:86px; object-fit:cover;">
-                    <div style="font-size:9px; color:#fff; overflow:hidden; height:40px; padding:2px;">${vCard.card.text}</div>
+                <div class="table-card-slot has-card" style="left:${cX}px; top:${cY}px; width:106px; height:152px; cursor:pointer;" onclick="voteForCardOnTable('${vCard.submitId}')">
+                    <img src="${vCard.card.url}" style="width:100%; height:100px; object-fit:cover;">
+                    <div style="font-size:10px; color:#fff; overflow:hidden; height:48px; padding:2px;">${vCard.card.text}</div>
                 </div>
             `;
         }
@@ -492,22 +504,21 @@ function renderMyHand(isDuelRound = false, duelists = []) {
         return;
     }
 
-    // Eldeki kartların boyutları tam %30 artırıldı
+    // 🚀 Eldeki kartlar bir önceki boyuta göre %30 daha büyütüldü (Genişlik: 135px, Yükseklik: 195px)
     dock.innerHTML = `
         <h4 style="margin: 0; color: #ffc107; font-size:13px;">🃏 Senin Kartların - Kart Sayısı: ${myCurrentCards.length}/5</h4>
-        <div class="cards-flex">
+        <div class="cards-flex" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
             ${myCurrentCards.map(card => `
-                <div class="meme-card" onclick="playCardDirect(${card.id})" style="cursor:pointer; width:104px; height:150px; background:#222; border-radius:6px; overflow:hidden; display:inline-block; border:1px solid #444; text-align:center;">
-                    <div style="width: 100%; height: 98px; background: ${card.color}; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                        <img src="${card.url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/104?text=Meme'">
+                <div class="meme-card" onclick="playCardDirect(${card.id})" style="cursor:pointer; width:135px; height:195px; background:#222; border-radius:8px; overflow:hidden; display:inline-block; border:1px solid #444; text-align:center;">
+                    <div style="width: 100%; height: 130px; background: ${card.color}; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <img src="${card.url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/135?text=Meme'">
                     </div>
-                    <div class="card-text-node" style="font-size:10px; color:#fff; padding:4px; display:flex; align-items:center; justify-content:center; text-align:center; height:46px; overflow:hidden;">${card.text}</div>
+                    <div class="card-text-node" style="font-size:11px; color:#fff; padding:4px; display:flex; align-items:center; justify-content:center; text-align:center; height:55px; overflow:hidden;">${card.text}</div>
                 </div>
             `).join('')}
         </div>
     `;
     
-    // Kart oynandıysa veya oyun oynama durumunda değilse kartları pasifleştir
     if (currentGameState !== "PLAYING" || iHaveSubmittedCard) {
         dock.style.pointerEvents = 'none';
         dock.style.opacity = '0.4';

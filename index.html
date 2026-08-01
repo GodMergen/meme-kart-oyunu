@@ -55,12 +55,23 @@
     </div>
 
 <!-- Orta-Alt Sabit Tema Seçici Paneli -->
-<div class="theme-selector-container">
-    <label>🎨 MASA TEMASI</label>
-    <div class="theme-buttons-flex">
-        <button class="theme-btn" onclick="setTheme('classic-green')" style="background: #1b4d3e; color: #fff; border: 1px solid #ffc107;">🌿 Yeşil</button>
-        <button class="theme-btn" onclick="setTheme('cyberpunk-neon')" style="background: #240046; color: #00f5d4; border: 1px solid #00f5d4;">⚡ Cyberpunk</button>
-        <button class="theme-btn" onclick="setTheme('obsidian-silver')" style="background: #111; color: #c0c0c0; border: 1px solid #c0c0c0;">🖤 Obsidian</button>
+<div class="theme-selector-container" style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
+    <div>
+        <label style="font-size: 10px; color: #aaa;">🌿 MASA TEMASI</label>
+        <div class="theme-buttons-flex" style="display: flex; gap: 5px;">
+            <button class="theme-btn" onclick="setTheme('classic-green')" style="background: #1b4d3e; color: #fff; border: 1px solid #ffc107; padding: 3px 8px; font-size:10px; cursor:pointer;">Yeşil</button>
+            <button class="theme-btn" onclick="setTheme('cyberpunk-neon')" style="background: #240046; color: #00f5d4; border: 1px solid #00f5d4; padding: 3px 8px; font-size:10px; cursor:pointer;">Cyber</button>
+            <button class="theme-btn" onclick="setTheme('obsidian-silver')" style="background: #111; color: #c0c0c0; border: 1px solid #c0c0c0; padding: 3px 8px; font-size:10px; cursor:pointer;">Obsidian</button>
+        </div>
+    </div>
+    
+    <div>
+        <label style="font-size: 10px; color: #ffc107;">👑 VIP İSİM & KART STİLİ</label>
+        <div style="display: flex; gap: 5px;">
+            <button onclick="setVipTheme('vip-gold')" style="background: #222; color: #ffc107; border: 1px solid #ffc107; padding: 3px 8px; font-size:10px; cursor:pointer; border-radius:4px;">🌟 Altın</button>
+            <button onclick="setVipTheme('vip-silver')" style="background: #222; color: #38bdf8; border: 1px solid #38bdf8; padding: 3px 8px; font-size:10px; cursor:pointer; border-radius:4px;">💎 Platinum</button>
+            <button onclick="setVipTheme('vip-red')" style="background: #222; color: #ff4d4d; border: 1px solid #ff4d4d; padding: 3px 8px; font-size:10px; cursor:pointer; border-radius:4px;">🔥 Karbon</button>
+        </div>
     </div>
 </div>
 

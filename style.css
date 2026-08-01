@@ -111,24 +111,59 @@ body {
     animation: popInGlow 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
 }
 
-/* 🪑 OYUNCU KOLTUKLARI */
+/* 🌟 SEÇENEK 1: Altın Sarısı & Kraliyet VIP Tasarımı */
+body.vip-gold .player-seat {
+    background: linear-gradient(135deg, #1a1a1a, #2c2c2c);
+    color: #ffc107;
+    border: 2px solid #ffc107;
+    box-shadow: 0 0 15px rgba(255, 193, 7, 0.4), inset 0 0 5px rgba(255, 193, 7, 0.2);
+}
+body.vip-gold .table-card-slot {
+    border: 2px solid #ffc107 !important;
+    box-shadow: 0 0 12px rgba(255, 193, 7, 0.3);
+    border-radius: 8px;
+}
+
+/* 💎 SEÇENEK 2: Platinum Gümüş & Kristal Tasarımı */
+body.vip-silver .player-seat {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: #38bdf8;
+    border: 2px solid #38bdf8;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.4), inset 0 0 5px rgba(56, 189, 248, 0.2);
+}
+body.vip-silver .table-card-slot {
+    border: 2px solid #38bdf8 !important;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+    border-radius: 8px;
+}
+
+/* 🔥 SEÇENEK 3: Premium VIP Neon Kırmızı & Karbon Tasarımı */
+body.vip-red .player-seat {
+    background: linear-gradient(135deg, #180303, #2b0a0a);
+    color: #ff4d4d;
+    border: 2px solid #ff4d4d;
+    box-shadow: 0 0 15px rgba(255, 77, 77, 0.5), inset 0 0 5px rgba(255, 77, 77, 0.3);
+}
+body.vip-red .table-card-slot {
+    border: 2px solid #ffc107 !important; /* veya kırmızı yapılabilir */
+    border: 2px solid #ff4d4d !important;
+    box-shadow: 0 0 12px rgba(255, 77, 77, 0.4);
+    border-radius: 8px;
+}
+
+/* Ortak Koltuk Baz Yapısı */
 .player-seat {
     position: absolute;
-    width: 100px;
+    width: 115px;
     text-align: center;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: bold;
-    background: #222;
     padding: 6px;
-    border-radius: 8px;
-    border: 2px solid #555;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    border-radius: 10px;
     z-index: 5;
     transition: all 0.3s;
-}
-.player-seat.submitted {
-    border-color: #ffc107;
-    box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* 🎴 MASAYA ATILAN KARTLARIN YUVASI */
