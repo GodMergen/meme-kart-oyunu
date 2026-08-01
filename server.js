@@ -8,7 +8,6 @@ app.use(express.static(__dirname));
 
 // 70 Adet Görsel Kütüphanesi (Doğrudan GitHub URL leri ile)
 const MEME_KUTUPHANESI = [
-   const MEME_KUTUPHANESI = [
     { id: 1, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-1.jpg", text: "ben öyle uygun gördüm" },
     { id: 2, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-2.jpg", text: "YAŞASIN KAFEİN" },
     { id: 3, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-3.jpg", text: "Kavga anı / Tutmayın beni" },

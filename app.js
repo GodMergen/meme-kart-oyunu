@@ -315,6 +315,7 @@ socket.on('receiveReaction', (data) => {
 
 socket.on('yourHandUpdated', (data) => {
     myCurrentCards = data.cards;
+    renderMyHand(); // 🚀 Kart çekildiğinde arayüzün anında güncellenmesini sağlayan tetikleyici
 });
 
 function drawCardFromDeck() {
