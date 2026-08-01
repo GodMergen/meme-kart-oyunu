@@ -1,4 +1,4 @@
-// server.js - 70 Görsel Destekli Kararlı Sürüm
+// server.js - 70 Görsel Kesin Eşleme Sürümü
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
@@ -6,14 +6,79 @@ const io = require('socket.io')(http, { cors: { origin: "*" } });
 
 app.use(express.static(__dirname));
 
-// 70 Adet Görsel Destekli Meme Kütüphanesi
-const MEME_KUTUPHANESI = Array.from({ length: 70 }, (_, i) => ({
-    id: i + 1,
-    color: "#222222",
-    type: "image",
-    url: `https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-${i + 1}.jpg`,
-    text: `Meme Kartı #${i + 1}`
-}));
+// 70 Adet Görsel Kütüphanesi (Doğrudan GitHub URL leri ile)
+const MEME_KUTUPHANESI = [
+    { id: 1, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-1.jpg", text: "O sırada benim sıfat" },
+    { id: 2, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-2.jpg", text: "Beklenmedik hata anı" },
+    { id: 3, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-3.jpg", text: "Ciddi misin kanka?" },
+    { id: 4, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-4.jpg", text: "İçten ağlarken dışa gülen ben" },
+    { id: 5, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-5.jpg", text: "Şoktayım, ne diyeceğimi bilmiyorum" },
+    { id: 6, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-6.jpg", text: "Projeyi tekte çalıştırınca ben" },
+    { id: 7, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-7.jpg", text: "Sabah terliğe basan o ayak" },
+    { id: 8, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-8.jpg", text: "Hoca en kritik yeri yazarken ben" },
+    { id: 9, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-9.jpg", text: "Gece 3'te akla gelen fikir" },
+    { id: 10, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-10.jpg", text: "İçinde bulunduğum durum" },
+    { id: 11, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-11.jpg", text: "Plan vs Gerçekleşen" },
+    { id: 12, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-12.jpg", text: "Dramayı izliyorum" },
+    { id: 13, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-13.jpg", text: "Mutlu mesut takılıyorum" },
+    { id: 14, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-14.jpg", text: "Sırf sussun diye onay" },
+    { id: 15, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-15.jpg", text: "Yapma derken yaptığım" },
+    { id: 16, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-16.jpg", text: "Özgüvenle hata yapma" },
+    { id: 17, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-17.jpg", text: "Saçmalamasını izliyorum" },
+    { id: 18, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-18.jpg", text: "Toparlamaya çalışırken batırmak" },
+    { id: 19, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-19.jpg", text: "Buraya geleceğini biliyordum" },
+    { id: 20, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-20.jpg", text: "Sabrımın son sınırları" },
+    { id: 21, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-21.jpg", text: "Gözden yaş gelene kadar" },
+    { id: 22, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-22.jpg", text: "Gizli tehlikeli plan" },
+    { id: 23, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-23.jpg", text: "Ortalığı ateşe verip izlemek" },
+    { id: 24, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-24.jpg", text: "Kontrol altındaymış gibi" },
+    { id: 25, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-25.jpg", text: "Hiçbir şey anlamadım ama kararlıyım" },
+    { id: 26, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-26.jpg", text: "Cevap bulamayınca ben" },
+    { id: 27, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-27.jpg", text: "Ciddiyetle saçmalamak" },
+    { id: 28, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-28.jpg", text: "Köşede kriz geçirmek" },
+    { id: 29, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-29.jpg", text: "Hayatımı sorgulama" },
+    { id: 30, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-30.jpg", text: "Mutluluğun kısa sürdüğü an" },
+    { id: 31, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-31.jpg", text: "Alakasız konuya dahil olmam" },
+    { id: 32, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-32.jpg", text: "Beklentiler vs Gerçekler" },
+    { id: 33, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-33.jpg", text: "Derin nefes alıp sakinleşme" },
+    { id: 34, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-34.jpg", text: "İşler yoluna girdi derken" },
+    { id: 35, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-35.jpg", text: "İçimdeki çocuk sustu" },
+    { id: 36, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-36.jpg", text: "Şaşırma yeteneğimi kaybettim" },
+    { id: 37, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-37.jpg", text: "Kendi hatamı görmezden gelme" },
+    { id: 38, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-38.jpg", text: "Bu kafayla nasıl yaşıyorum" },
+    { id: 39, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-39.jpg", text: "Konuşana bakış açım" },
+    { id: 40, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-40.jpg", text: "Gereksiz özgüven patlaması" },
+    { id: 41, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-41.jpg", text: "Tuhaflık karşısında donakalmak" },
+    { id: 42, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-42.jpg", text: "Muazzam mantık hatası" },
+    { id: 43, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-43.jpg", text: "Gizli işler peşinde suçüstü" },
+    { id: 44, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-44.jpg", text: "Dünyanın en rahat insanı" },
+    { id: 45, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-45.jpg", text: "Bu anı ölümsüzleştirmek lazım" },
+    { id: 46, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-46.jpg", text: "Sorumluluktan kaçış şeklim" },
+    { id: 47, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-47.jpg", text: "Bütün enerjimi harcıyorum" },
+    { id: 48, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-48.jpg", text: "Karanlık mizah seansı" },
+    { id: 49, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-49.jpg", text: "Plan tutmayınca surat ifadesi" },
+    { id: 50, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-50.jpg", text: "Mantıklı bir bahanem var" },
+    { id: 51, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-51.jpg", text: "Ortamın kalitesini düşürmek" },
+    { id: 52, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-52.jpg", text: "Hatamı gururla savunuyorum" },
+    { id: 53, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-53.jpg", text: "Gözlerimden alev çıkarken" },
+    { id: 54, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-54.jpg", text: "Hayatın sillesini yiyince" },
+    { id: 55, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-55.jpg", text: "Arka plandaki dramatik müzik" },
+    { id: 56, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-56.jpg", text: "Cevap vermeyip gülmek" },
+    { id: 57, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-57.jpg", text: "Kurtaracak tek kişi olup batırmak" },
+    { id: 58, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-58.jpg", text: "Normal insan gibi davranma" },
+    { id: 59, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-59.jpg", text: "Destansı hata yapma anı" },
+    { id: 60, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-60.jpg", text: "Kazanan yine şaşırtmıyor" },
+    { id: 61, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-61.jpg", text: "Epic fail anı" },
+    { id: 62, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-62.jpg", text: "Gözlerimi kapatıyorum" },
+    { id: 63, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-63.jpg", text: "Zeka akıyor gruptan" },
+    { id: 64, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-64.jpg", text: "İçimdeki kaos sesleri" },
+    { id: 65, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-65.jpg", text: "Sakin kalma çabaları" },
+    { id: 66, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-66.jpg", text: "Bunu da mı yaptım" },
+    { id: 67, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-67.jpg", text: "İfşa olmuşum gibiyim" },
+    { id: 68, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-68.jpg", text: "Mükemmel zamanlama" },
+    { id: 69, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-69.jpg", text: "Olaylar olaylar" },
+    { id: 70, color: "#222222", type: "image", url: "https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-70.jpg", text: "Ve kapanış" }
+];
 
 const rooms = {};
 
