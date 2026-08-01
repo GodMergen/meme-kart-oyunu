@@ -435,6 +435,11 @@ socket.on('tableStateUpdated', (state) => {
     const pool = document.getElementById('seatsAndSlotsPool');
     if (!pool) return;
     pool.innerHTML = '';
+    
+    // 🚀 MASAYI KİLİTTEN KURTARAN HAYATİ KODLAR:
+    // Her yeni turda veya ekranda masanın tıklanabilirliğini sıfırlar
+    pool.style.pointerEvents = 'auto'; 
+    pool.style.opacity = '1';
 
     const total = state.players.length;
     // YENİ %15 BÜYÜTÜLMÜŞ MASA KOORDİNATLARI
