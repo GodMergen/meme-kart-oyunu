@@ -1,7 +1,7 @@
-// app.js - VIP Kurucu, Düello Modu ve Yayıncı Gizlilik Modu Sürümü
+// app.js - 70 Görsel Uyumlu İstemci Sürümü
 const socket = io();
 let currentRoomCode = "";
-let isRoomCodeHidden = false; // 👁️ Yayıncı modu bayrağı
+let isRoomCodeHidden = false;
 let myRole = "player";
 let myCurrentCards = [];
 let currentGameState = "LOBBY";
@@ -20,7 +20,6 @@ function getMaxQuota() {
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-// --- TEMA DEĞİŞTİRME MANTIĞI EKLENDİ ---
 function setTheme(themeName) {
     document.body.classList.remove('theme-classic-green', 'theme-cyberpunk-neon', 'theme-obsidian-silver');
     document.body.classList.add(`theme-${themeName}`);
@@ -30,7 +29,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('memeGameTheme') || 'classic-green';
     setTheme(savedTheme);
 });
-// ----------------------------------------
 
 function playSound(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -89,23 +87,17 @@ function playSound(type) {
         audio.volume = 1.0;
         audio.play().catch(e => console.log("Ses hatası:", e));
     } else if (type === 'trol-laugh') {
-        // 🎯 TARAYICININ KENDİ MOTORUYLA ÜRETİLEN %100 ÇALIŞAN SİNİR BOZUCU KAHKAHA
         const laughNotes = [350, 480, 400, 550, 420, 600, 450, 650];
         laughNotes.forEach((freq, idx) => {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-            
-            // Kahkaha tınısı için testere dişi ve üçgen dalga karışımı
             osc.type = idx % 2 === 0 ? 'sawtooth' : 'triangle';
-            
             const startTime = now + (idx * 0.08);
             osc.frequency.setValueAtTime(freq, startTime);
-            
             gain.gain.setValueAtTime(0.4, startTime);
             gain.gain.linearRampToValueAtTime(0.01, startTime + 0.09);
-            
             osc.start(startTime);
             osc.stop(startTime + 0.09);
         });
@@ -134,7 +126,6 @@ function createRoom() {
     socket.emit('createRoom', { playerName: playerName });
 }
 
-// 👁️ Yayıncı Modu (Kod Gizleme/Gösterme Butonu)
 function toggleRoomCode() {
     isRoomCodeHidden = !isRoomCodeHidden;
     const codeDisplay = document.getElementById("lobbyRoomCodeText");
@@ -271,18 +262,12 @@ function sendReaction(type, value) {
     const maxLimit = getMaxQuota();
     
     if (type === 'emoji') {
-        if (emojiCountThisRound >= maxLimit) {
-            alert(`Bu tur için emoji hakkın bitti! (Maks ${maxLimit})`); return;
-        }
+        if (emojiCountThisRound >= maxLimit) { alert(`Bu tur için emoji hakkın bitti!`); return; }
         emojiCountThisRound++;
     } else if (type === 'sound') {
-        if (soundCountThisRound >= maxLimit) {
-            alert(`Bu tur için ses efekti hakkın bitti! (Maks ${maxLimit})`); return;
-        }
+        if (soundCountThisRound >= maxLimit) { alert(`Bu tur için ses hakkın bitti!`); return; }
         const now = Date.now();
-        if (now - lastSoundTime < 2000) {
-            alert("Ses efektleri arasında 2 saniye beklemelisin!"); return;
-        }
+        if (now - lastSoundTime < 2000) { alert("Sesler arasında 2 saniye beklemelisin!"); return; }
         soundCountThisRound++;
         lastSoundTime = now;
     }
@@ -350,14 +335,13 @@ socket.on('tableStateUpdated', (state) => {
 
     const center = document.querySelector('.table-center');
     if (center) {
-        // ⚔️ UZATMA DÜELLOSU ANONSU
         if (state.gameState === "DUEL_ANNOUNCEMENT") {
             if (leaderboardTimerInterval) clearInterval(leaderboardTimerInterval);
             center.classList.add("winner-silver-glow");
             
             let duelHtml = `
                 <h2 style="color:#dc3545; font-size:16px; margin:0; margin-bottom:5px; text-shadow: 0 0 10px red;">⚔️ UZATMA DÜELLOSU! ⚔️</h2>
-                <p style="font-size:11px; color:#fff;">Puanlar berabere! Şampiyonu belirlemek için son bir kapışma!</p>
+                <p style="font-size:11px; color:#fff;">Puanlar berabere! Şampiyonu belirlemek için son kapışma!</p>
                 <p style="font-size:13px; color:#ffc107; font-weight:bold;">${state.duelData.names.join(' <span style="color:white;">vs</span> ')}</p>
             `;
             if (isCreator) {
@@ -372,7 +356,6 @@ socket.on('tableStateUpdated', (state) => {
             if (leaderboardTimerInterval) clearInterval(leaderboardTimerInterval);
             let lbTime = 15;
 
-            let prevBatch = state.roundCount - 10;
             let lbHtml = `
                 <h2 style="color:#ffc107; font-size:12px; margin:0; margin-bottom:4px;">🏆 MAÇ SONU SKOR TABLOSU 🏆</h2>
                 <div style="max-height: 90px; overflow-y: auto; width: 100%; padding: 2px;">
@@ -466,7 +449,6 @@ socket.on('tableStateUpdated', (state) => {
         const cX = Math.round(270 + radiusCard * Math.cos(angle) - 40);
         const cY = Math.round(260 + radiusCard * Math.sin(angle) - 57);
 
-        // 👑 VIP Kurucu Tasarımı (Altın Çerçeve ve Taç)
         const isVIP = (player.id === state.creatorId);
         let seatClass = "player-seat";
         
@@ -486,9 +468,7 @@ socket.on('tableStateUpdated', (state) => {
 
         let slotHtml = "";
         if (state.gameState === "PLAYING") {
-            if (state.isDuelRound && !state.duelists.includes(player.id)) {
-                // Düelloda olmayan oyuncunun masasında kart alanı görünmez
-            } else {
+            if (!(state.isDuelRound && !state.duelists.includes(player.id))) {
                 if (state.submittedCardPlayerIds.includes(player.id)) {
                     slotHtml = `<div class="table-card-slot back-flipped" style="left: ${cX}px; top: ${cY}px; width: 80px; height: 115px;"></div>`;
                 } else {
@@ -502,10 +482,10 @@ socket.on('tableStateUpdated', (state) => {
                 slotHtml = `
                     <div class="table-card-slot has-card flip-animation" style="left: ${cX}px; top: ${cY}px; width: 80px; height: 115px; cursor: pointer; border: 2px solid #007bff;" 
                          onclick="${state.gameState === 'VOTING' ? `voteForCardOnTable('${vCard.submitId}')` : ''}">
-                        <div style="width: 100%; height: 80px; background: ${vCard.card.color}; display: flex; align-items: center; justify-content: center; font-size: 32px;">
-                            ${vCard.card.icon}
+                        <div style="width: 100%; height: 80px; background: ${vCard.card.color}; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            <img src="${vCard.card.url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/80?text=Meme'">
                         </div>
-                        <div class="card-caption" style="font-size: 10px; padding: 4px;">${vCard.card.text}</div>
+                        <div class="card-caption" style="font-size: 9px; padding: 2px; height: 32px; overflow: hidden;">${vCard.card.text}</div>
                     </div>
                 `;
             }
@@ -527,9 +507,8 @@ function renderMyHand(isDuelRound = false, duelists = []) {
         return;
     }
 
-    // Eğer düello turundaysak ve bu oyuncu düellocu değilse kartlarını gizle / kilitle
     if (currentGameState === "PLAYING" && isDuelRound && !duelists.includes(socket.id)) {
-        dock.innerHTML = `<h3 style="color: #dc3545; margin:0;">⚔️ UZATMA DÜELLOSUNU İZLİYORSUN!</h3><p style="margin:0; font-size:12px; color:#aaa; margin-top:5px;">Sadece düellocular kart atabilir. Oylama için bekle!</p>`;
+        dock.innerHTML = `<h3 style="color: #dc3545; margin:0;">⚔️ UZATMA DÜELLOSUNU İZLİYORSUNUZ!</h3><p style="margin:0; font-size:12px; color:#aaa; margin-top:5px;">Sadece düellocular kart atabilir.</p>`;
         dock.style.pointerEvents = 'none';
         dock.style.opacity = '0.5';
         return;
@@ -539,11 +518,11 @@ function renderMyHand(isDuelRound = false, duelists = []) {
         <h4 style="margin: 0; color: #ffc107; font-size:13px;">🃏 Senin Kartların - Kart Sayısı: ${myCurrentCards.length}/5</h4>
         <div class="cards-flex">
             ${myCurrentCards.map(card => `
-                <div class="meme-card" onclick="playCardDirect(${card.id})">
-                    <div style="width: 100%; height: 85px; background: ${card.color}; display: flex; align-items: center; justify-content: center; font-size: 32px;">
-                        ${card.icon}
+                <div class="meme-card" onclick="playCardDirect(${card.id})" style="cursor:pointer; width:80px; height:115px; background:#222; border-radius:5px; overflow:hidden; display:inline-block; border:1px solid #444; text-align:center;">
+                    <div style="width: 100%; height: 75px; background: ${card.color}; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <img src="${card.url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/80?text=Meme'">
                     </div>
-                    <div class="card-text-node">${card.text}</div>
+                    <div class="card-text-node" style="font-size:9px; color:#fff; padding:2px; height:34px; overflow:hidden;">${card.text}</div>
                 </div>
             `).join('')}
         </div>

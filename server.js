@@ -1,4 +1,4 @@
-// server.js - Uzatma Düellosu, VIP Kurucu ve Yayıncı Modu Entegreli
+// server.js - 70 Görsel Destekli Kararlı Sürüm
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
@@ -6,15 +6,14 @@ const io = require('socket.io')(http, { cors: { origin: "*" } });
 
 app.use(express.static(__dirname));
 
-const MEME_KUTUPHANESI = [
-    { id: 1, color: "#e63946", icon: "💥", text: "O sırada benim sıfat" },
-    { id: 2, color: "#f1faee", icon: "🤡", text: "Beklenmedik hata anı" },
-    { id: 3, color: "#a8dadc", icon: "🤔", text: "Ciddi misin kanka?" },
-    { id: 4, color: "#457b9d", icon: "😭", text: "İçten ağlarken dışa gülen ben" },
-    { id: 5, color: "#1d3557", icon: "😳", text: "Şoktayım, ne diyeceğimi bilmiyorum" },
-    { id: 6, color: "#ffb703", icon: "😎", text: "Projeyi tekte çalıştırınca ben" },
-    { id: 7, color: "#fb8500", icon: "💀", text: "Sabah terliğe basan o ayak" }
-];
+// 70 Adet Görsel Destekli Meme Kütüphanesi
+const MEME_KUTUPHANESI = Array.from({ length: 70 }, (_, i) => ({
+    id: i + 1,
+    color: "#222222",
+    type: "image",
+    url: `https://raw.githubusercontent.com/GodMergen/memes-kart-oyunu/main/images/meme-${i + 1}.jpg`,
+    text: `Meme Kartı #${i + 1}`
+}));
 
 const rooms = {};
 
@@ -53,7 +52,6 @@ function revealCardsAndStartVoting(roomCode) {
     if (!room || room.gameState !== "PLAYING") return;
 
     room.players.forEach(player => {
-        // Düello turundaysak ve bu oyuncu düellocu değilse ondan kart beklemiyoruz
         if (room.isDuelRound && !room.duelists.includes(player.id)) return;
 
         const hasSubmitted = room.submittedCards.some(c => c.playerId === player.id);
@@ -74,7 +72,7 @@ function revealCardsAndStartVoting(roomCode) {
 
     room.gameState = "VOTING";
     room.shuffledVotingCards = shuffle(room.submittedCards.map(c => {
-        return { submitId: c.submitId, card: c.card };
+        return { submitId: c.submitId, card: c.card, ownerId: c.playerId };
     }));
     sendTableState(roomCode);
 }
@@ -89,13 +87,13 @@ function sendTableState(roomCode) {
         situation: room.currentSituation,
         players: room.players,
         spectators: room.spectators,
-        creatorId: room.creator, // 👑 VIP durumu için kurucu ID'sini gönderiyoruz
+        creatorId: room.creator,
         submittedCardsCount: room.submittedCards.length,
         submittedCardPlayerIds: room.submittedCards.map(c => c.playerId),
         votingCards: room.gameState === "VOTING" || room.gameState === "RESULTS" ? room.shuffledVotingCards : [],
         winnerData: room.winnerData || null,
         leaderboardData: room.leaderboardData || null,
-        isDuelRound: room.isDuelRound || false, // ⚔️ Düello durumu
+        isDuelRound: room.isDuelRound || false,
         duelists: room.duelists || [],
         duelData: room.duelData || null
     });
@@ -158,7 +156,6 @@ io.on('connection', (socket) => {
         if (!room) return;
         if (room.creator !== socket.id) return;
 
-        // Eğer oyun düello anonsundan gelmiyorsa normal tur sayısını artır
         if (room.gameState !== "DUEL_ANNOUNCEMENT") {
             room.roundCount += 1; 
         }
@@ -188,7 +185,7 @@ io.on('connection', (socket) => {
             if (player.cards.length === 0) {
                 let shuffledDeck = shuffle([...MEME_KUTUPHANESI]);
                 player.cards = shuffledDeck.slice(0, 5).map((card, idx) => {
-                    return { id: Date.now() + idx + Math.random(), color: card.color, icon: card.icon, text: card.text };
+                    return { id: Date.now() + idx + Math.random(), color: card.color, type: card.type, url: card.url, text: card.text };
                 });
             } 
             io.to(player.id).emit('yourHandUpdated', { cards: player.cards });
@@ -202,7 +199,6 @@ io.on('connection', (socket) => {
         const room = rooms[data.roomCode];
         if (!room || room.gameState !== "PLAYING") return;
         
-        // Düello turundaysak sadece düellocular kart çekebilir
         if (room.isDuelRound && !room.duelists.includes(socket.id)) {
             socket.emit('localError', { message: "Uzatma düellosundasınız! Sadece düellocular kart çekebilir." }); return;
         }
@@ -211,14 +207,14 @@ io.on('connection', (socket) => {
         if (!player) return;
 
         if (player.hasDrawnThisRound) {
-            socket.emit('localError', { message: "Bu tur zaten kart çektin! Diğer turu bekle." }); return;
+            socket.emit('localError', { message: "Bu tur zaten kart çektin!" }); return;
         }
         if (player.cards.length >= 5) {
-            socket.emit('localError', { message: "Eliniz dolu! Önce bir kart atmalısınız." }); return;
+            socket.emit('localError', { message: "Eliniz dolu!" }); return;
         }
 
         const templateCard = MEME_KUTUPHANESI[Math.floor(Math.random() * MEME_KUTUPHANESI.length)];
-        player.cards.push({ id: Date.now() + Math.random(), color: templateCard.color, icon: templateCard.icon, text: templateCard.text });
+        player.cards.push({ id: Date.now() + Math.random(), color: templateCard.color, type: templateCard.type, url: templateCard.url, text: templateCard.text });
         player.hasDrawnThisRound = true; 
         
         socket.emit('yourHandUpdated', { cards: player.cards });
@@ -228,9 +224,8 @@ io.on('connection', (socket) => {
         const room = rooms[data.roomCode];
         if (!room || room.gameState !== "PLAYING") return;
         
-        // Düello kısıtlaması
         if (room.isDuelRound && !room.duelists.includes(socket.id)) {
-            socket.emit('localError', { message: "Bu bir düello! Sadece savaşanlar kart atabilir." }); return;
+            socket.emit('localError', { message: "Bu bir düello!" }); return;
         }
 
         const player = room.players.find(p => p.id === socket.id);
@@ -254,7 +249,6 @@ io.on('connection', (socket) => {
         socket.emit('yourHandUpdated', { cards: player.cards });
         sendTableState(data.roomCode);
 
-        // Beklenen kart sayısı düelloya göre değişir
         const expectedCards = room.isDuelRound ? room.duelists.length : room.players.length;
         if (room.submittedCards.length === expectedCards) {
             clearInterval(room.timerInterval);
@@ -280,7 +274,6 @@ io.on('connection', (socket) => {
         }
 
         room.submittedVotes += 1;
-        
         const expectedVotes = room.players.length + room.spectators.length;
 
         if (room.submittedVotes >= expectedVotes) {
@@ -311,20 +304,16 @@ io.on('connection', (socket) => {
                 sVotes: maxSVotes
             };
 
-            // 🎯 LİDERLİK TABLOSU VE DÜELLO (SUDDEN DEATH) HESAPLAMASI
             let sorted = [...room.players].sort((a, b) => b.score - a.score);
             let topScore = sorted[0].score;
             let tiedPlayers = sorted.filter(p => p.score === topScore);
 
-            // Eğer normal bir 10 turun sonundaysak VEYA önceki bir düello yine berabere bittiyse:
             if ((room.roundCount % 10 === 0 || room.isDuelRound) && tiedPlayers.length > 1) {
                 room.gameState = "DUEL_ANNOUNCEMENT";
                 room.isDuelRound = true;
                 room.duelists = tiedPlayers.map(p => p.id);
                 room.duelData = { names: tiedPlayers.map(p => p.name) };
-            } 
-            // Eğer 10 turun sonundaysak ve beraberlik yoksa (veya düello ile bozulduysa):
-            else if (room.roundCount % 10 === 0 || room.isDuelRound) {
+            } else if (room.roundCount % 10 === 0 || room.isDuelRound) {
                 room.gameState = "LEADERBOARD";
                 room.leaderboardData = sorted;
                 room.isDuelRound = false; 
@@ -368,5 +357,5 @@ io.on('connection', (socket) => {
 });
 
 http.listen(3000, () => {
-    console.log('=== DÜELLO, VIP VE GİZLİ KOD SİSTEMİ AKTİF ===');
+    console.log('=== 70 GÖRSEL DESTEKLİ SUNUCU AKTİF ===');
 });
