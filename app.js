@@ -434,79 +434,63 @@ socket.on('tableStateUpdated', (state) => {
 
     const pool = document.getElementById('seatsAndSlotsPool');
     if (!pool) return;
-    pool.style.pointerEvents = 'auto';
-    pool.style.opacity = '1';
     pool.innerHTML = '';
 
     const total = state.players.length;
-    const radiusSeat = 240; 
-    const radiusCard = 140; 
+    // YENİ %15 BÜYÜTÜLMÜŞ MASA KOORDİNATLARI
+    const radiusSeat = 276; 
+    const radiusCard = 161; 
+    const centerOffset = 345;
 
     state.players.forEach((player, index) => {
         const angle = (index * (360 / total)) * (Math.PI / 180);
         
-        const sX = Math.round(280 + radiusSeat * Math.cos(angle) - 50); 
-        const sY = Math.round(280 + radiusSeat * Math.sin(angle) - 20);
-        const cX = Math.round(270 + radiusCard * Math.cos(angle) - 40);
-        const cY = Math.round(260 + radiusCard * Math.sin(angle) - 57);
+        // %15 Büyütülmüş pozisyonlamalar
+        const sX = Math.round(centerOffset + radiusSeat * Math.cos(angle) - 58); 
+        const sY = Math.round(centerOffset + radiusSeat * Math.sin(angle) - 20);
+        const cX = Math.round(centerOffset + radiusCard * Math.cos(angle) - 46);
+        const cY = Math.round(centerOffset + radiusCard * Math.sin(angle) - 66);
 
-        const isVIP = (player.id === state.creatorId);
-        let seatClass = "player-seat";
-        
-        if (state.submittedCardPlayerIds.includes(player.id)) seatClass += " submitted";
-        if (state.isDuelRound && !state.duelists.includes(player.id)) seatClass += " non-duelist";
+        pool.innerHTML += `<div class="player-seat" style="left:${sX}px; top:${sY}px;">${player.name} (${player.score}P)</div>`;
 
-        let vipStyle = isVIP ? 'border: 2px solid #ffc107; box-shadow: 0 0 15px rgba(255, 193, 7, 0.6);' : '';
-        let vipBadge = isVIP ? '<div style="position:absolute; top:-12px; right:-10px; font-size:18px; filter: drop-shadow(0 0 5px #ffc107);" title="VIP Kurucu">👑</div>' : '';
-
-        pool.innerHTML += `
-            <div class="${seatClass}" style="left: ${sX}px; top: ${sY}px; ${vipStyle}">
-                ${vipBadge}
-                <div style="font-size:10px; color:#ffc107;">${player.score} Puan</div>
-                <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${player.name}</div>
-            </div>
-        `;
-
-        let slotHtml = "";
-        if (state.gameState === "PLAYING") {
-            if (!(state.isDuelRound && !state.duelists.includes(player.id))) {
-                if (state.submittedCardPlayerIds.includes(player.id)) {
-                    slotHtml = `<div class="table-card-slot back-flipped" style="left: ${cX}px; top: ${cY}px; width: 80px; height: 115px;"></div>`;
-                } else {
-                    slotHtml = `<div class="table-card-slot" style="left: ${cX}px; top: ${cY}px; width: 80px; height: 115px;"></div>`;
-                }
-            }
-        } 
-        else if (state.gameState === "VOTING" || state.gameState === "RESULTS") {
+        // Masadaki kartların boyutu %15 artırıldı (Genişlik: 92px, Yükseklik: 132px)
+        if (state.gameState === "PLAYING" && state.submittedCardPlayerIds.includes(player.id)) {
+            pool.innerHTML += `<div class="table-card-slot back-flipped" style="left:${cX}px; top:${cY}px; width:92px; height:132px;"></div>`;
+        } else if ((state.gameState === "VOTING" || state.gameState === "RESULTS") && state.votingCards[index]) {
             const vCard = state.votingCards[index];
-            if (vCard) {
-                slotHtml = `
-                    <div class="table-card-slot has-card flip-animation" style="left: ${cX}px; top: ${cY}px; width: 80px; height: 115px; cursor: pointer; border: 2px solid #007bff;" 
-                         onclick="${state.gameState === 'VOTING' ? `voteForCardOnTable('${vCard.submitId}')` : ''}">
-                        <div style="width: 100%; height: 80px; background: ${vCard.card.color}; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                            <img src="${vCard.card.url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/80?text=Meme'">
-                        </div>
-                        <div class="card-caption" style="font-size: 9px; padding: 2px; height: 32px; overflow: hidden;">${vCard.card.text}</div>
-                    </div>
-                `;
-            }
+            pool.innerHTML += `
+                <div class="table-card-slot has-card" style="left:${cX}px; top:${cY}px; width:92px; height:132px; cursor:pointer;" onclick="voteForCardOnTable('${vCard.submitId}')">
+                    <img src="${vCard.card.url}" style="width:100%; height:86px; object-fit:cover;">
+                    <div style="font-size:9px; color:#fff; overflow:hidden; height:40px; padding:2px;">${vCard.card.text}</div>
+                </div>
+            `;
         }
-        pool.innerHTML += slotHtml;
     });
-
     renderMyHand(state.isDuelRound, state.duelists); 
 });
 
-function renderMyHand(isDuelRound = false, duelists = []) {
+function renderMyHand() {
     const dock = document.getElementById('handDockZone');
     if (!dock) return;
+    if (myRole !== 'player') { dock.innerHTML = "İzleyici Modu"; return; }
 
-    if (myRole !== 'player') {
+    // Eldeki kartların boyutları tam %30 artırıldı (Genişlik: 104px, Yükseklik: 150px)
+    dock.innerHTML = `
+        <h4>Senin Kartların (${myCurrentCards.length}/5)</h4>
+        <div class="cards-flex">
+            ${myCurrentCards.map(card => `
+                <div class="meme-card" onclick="playCardDirect(${card.id})" style="width:104px; height:150px; background:#222; border-radius:6px; overflow:hidden; display:inline-block; cursor:pointer;">
+                    <img src="${card.url}" style="width:100%; height:98px; object-fit:cover;">
+                    <div style="font-size:10px; color:#fff; height:46px; overflow:hidden; padding: 4px; display:flex; align-items:center; justify-content:center; text-align:center;">${card.text}</div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
         let specMsg = "Masadaki hareketleri yukardan izliyorsunuz.";
         if (currentGameState === "VOTING") specMsg = "✨ OYLAMA BAŞLADI! Masadaki kartlara tıklayarak oy verin!";
         dock.innerHTML = `<h3 style="color: #ffc107; margin:0;">🎥 Canlı İzleyici Stüdyosu</h3><p style="margin:0; font-size:12px; color:#aaa; margin-top:5px;">${specMsg}</p>`;
         return;
-    }
 
     if (currentGameState === "PLAYING" && isDuelRound && !duelists.includes(socket.id)) {
         dock.innerHTML = `<h3 style="color: #dc3545; margin:0;">⚔️ UZATMA DÜELLOSUNU İZLİYORSUNUZ!</h3><p style="margin:0; font-size:12px; color:#aaa; margin-top:5px;">Sadece düellocular kart atabilir.</p>`;
@@ -536,7 +520,6 @@ function renderMyHand(isDuelRound = false, duelists = []) {
         dock.style.pointerEvents = 'auto';
         dock.style.opacity = '1';
     }
-}
 
 function playCardDirect(cardId) {
     if(document.getElementById('handDockZone')) {
