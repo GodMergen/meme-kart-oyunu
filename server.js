@@ -273,11 +273,40 @@ io.on('connection', (socket) => {
         room.leaderboardData = null;
 
         const situationPool = [
-            "Sabah alarmı kapatıp 5 dakika daha uyuyunca geçen o yarım saat...",
-            "Tam banyodan çıkmışken birinin ıslak terliğine basmışımdır...",
-            "Önemli bir şey anlatırken karşımdakinin esnediğini görmüşümdür...",
-            "Bilgisayara format attıktan sonra yedeklemeyi unuttuğum dosyayı hatırlayınca...",
-            "Valorant'ta arkasından bıçak atmaya çalışırken adamın aniden arkasına dönmesi..."
+
+
+    "Paftaları basmaya gittiğinde ozalitçinin önünde 50 kişilik kuyruk var",
+    "Jüri üyesi projenin tam ortasını gösterip Neden buraya dev bir boşluk koydun dedi, oysa orayı çizmeyi unuttun.",
+    "Sabaha kadar çalışıp hazırladığın konsepti jüri 10 saniyede Bunu hiç anlamadım, başka neyin var? diyerek reddetti.",
+    "Maketi jüri salonuna taşırken merdivenlerde bir parçası koptu ve yapıştırıcın bitti.",
+    "Bu proje bana bir şey hatırlatıyor diyen jüri üyesinin telefonundan ünlü bir mimarın yapısını açması.",
+    "Sabaha karşı 04:00'te stüdyoda Render alan bilgisayarın fan sesiyle meditasyon yapmaya çalışıyorsun.",
+    "Maket bıçağıyla karton keserken yanlışlıkla kendi parmağını kestiğinde verilen Neyse ki karton kan olmadı tepkisi.",
+    "Bu gece erken yatacağım deyip gece 03:00'te spagetti makarnadan strüktür denerken kendini bulman.",
+    "Tam teslim anında AutoCAD/Revit'in Fatal Error verip kapanması ve en son kaydı 3 saat önce almış olman.",
+    "Photoshop'ta render alırken tarama yaparken bilgisayarın ekranının maviye dönmesi.",
+    "Müşterinin veya hocanın Şu duvarı biraz sola kaysak? demesiyle tüm taşıyıcı sistemin ve planın çökmesi.",
+    "Yanlışlıkla 1/50 planı 1/100 ölçekte basıp paftada minyatür kalması.",
+    "Bayram ziyaretinde akrabalarının Sen şimdi ev çiziyor musun, bize de bir dubleks çizsene demesi.",
+    "İç mimarlık ve mimarlık farkını aile büyüklerine 100. kez anlatmaya çalışman.",
+    "Bayramda amcanın yanına gelip Şimdi sen iç mimar mısın dış mimar mı? sorusuyla karşılaştın",
+    "Herhangi bir binaya girdiğinde millet mekanın tadını çıkarırken senin asma tavan detayına ve birleşim elemanlarına kilitlenmen.",
+    "Bütçemiz kısıtlı ama Zaha Hadid tarzı ikonik bir şey istiyoruz diyen müşteri/hoca.",
+    "Jüride Nasıl olsa fark etmezler dediğin detaya hocanın cetvelle yaklaşması.",
+    "Tüm bursun özalitçide ve maket malzemelerinde kalması.",
+    "Jüriye 1 saat kala en yakın arkadaşının paftalarını boyaması.",
+    "Stüdyo arkadaşının senin konseptinle jüriye çıkması.",
+    "Gece anlattığın proje fikrinin sabah yan masada çizilmiş olması.",
+    "Proje fikrinin Esinlendim denilerek kopyalanması.",
+    "Gizlice birini stalklarken yanlışlıkla 54 hafta önceki fotoğrafını beğendiğimde hissettiğim.",
+    "Arkadaş grubunda kimsenin anlamadığı o iğrenç espriyi yaptıktan sonraki gururlu bekleyişim.",
+    "Kulaklığımı takmış yolda yürürken kendi kafamda kurduğum o epik senaryodaki ana karakter halim.",
+    "Sabahlara kadar uykusuz kalıp yetiştirdiğin o tasarıma hocanın sadece iki saniye bakıp olmamış demesi.",
+    "Berber/kuaför saçını mahvetmişken aynaya bakıp zoraki bir tebessümle \"tam istediğim gibi oldu abi, eline sağlık\" derken ben.",
+    "Aylardır taktik yaptığın hoşlandığın kişinin sana aniden \"kanka sen anlarsın, şuna nasıl mesaj atayım?\" diye sorması.",
+    "Annemin, eve gelen misafirlere benim küçüklükteki en utanç verici anılarımı anlatmaya başladığı o an.",
+    "Gece saat 4'te \"bu videoyu neden izliyorum\" diye sorguladığın o yer altında gizli havuz inşa eden adamları izlerkenki halin."
+
         ];
         room.currentSituation = situationPool[Math.floor(Math.random() * situationPool.length)];
 
