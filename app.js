@@ -211,6 +211,10 @@ socket.on('joinedRoom', (data) => {
 });
 
 socket.on('roomUpdated', (room) => {
+    // 🚀 ESKİ DURUMU HAFIZAYA AL VE YENİ KURUCU KONTROLÜ YAP
+    const wasICreator = isCreator; 
+    isCreator = (room.creator === socket.id); 
+
     const playerListUl = document.getElementById('playerList');
     if (playerListUl) {
         playerListUl.innerHTML = ''; 
@@ -219,6 +223,25 @@ socket.on('roomUpdated', (room) => {
             playerListUl.innerHTML += `<li>${icon} ${p.name}</li>`;
         });
         room.spectators.forEach(s => { playerListUl.innerHTML += `<li style="color:#888;">🎥 ${s.name}</li>`; });
+        
+        // 🛠️ DURUM 1: LOBİDEYSEK VE KURUCU BİZ OLDUYSAK
+        if (isCreator && !wasICreator && !document.querySelector("button[onclick='startGame()']")) {
+            const container = document.querySelector(".welcome-container");
+            if (container) {
+                container.innerHTML += `<button class="action-btn" style="background-color: #28a745; margin-top:15px;" onclick="startGame()">Oyunu Başlat 🚀</button>`;
+                const p = container.querySelector("p");
+                if(p && p.innerText.includes("Kurucunun")) p.remove(); // "Bekleniyor" yazısını sil
+            }
+        }
+    }
+
+    // 🛠️ DURUM 2: OYUN İÇİNDEYSEK VE KURUCU BİZ OLDUYSAK (Oyunun donmasını engeller)
+    if (isCreator && !wasICreator && currentGameState !== "LOBBY") {
+        const center = document.querySelector('.table-center');
+        if (center && !center.innerHTML.includes('nextRoundTrigger()')) {
+            // Masanın ortasına zorla "Turu İlerlet" butonu ekler
+            center.innerHTML += `<br><button onclick="nextRoundTrigger()" style="margin-top:10px; background:#28a745; color:white; border:none; padding:8px 12px; border-radius:4px; font-size:12px; cursor:pointer; font-weight:bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">Yeni Kurucu: Devam Et 🚀</button>`;
+        }
     }
 });
 
@@ -475,7 +498,7 @@ const pool = document.getElementById('seatsAndSlotsPool');
 
         // Oyuncunun seçtiği VIP temayı alıyoruz (Eğer seçmediyse varsayılan vip-gold olur)
 const pVipClass = player.vipTheme || 'vip-gold';
-pool.innerHTML += `<div class="player-seat ${pVipClass}" style="left:${sX}px; top:${sY}px;">${player.name} (${player.score}P)</div>`;;
+pool.innerHTML += `<div class="player-seat ${pVipClass}" style="left:${sX}px; top:${sY}px;">${player.name} (${player.score}P)</div>`;
 
         // Masadaki kartların boyutu %15 daha büyütüldü (Genişlik: ~106px, Yükseklik: ~152px)
         if (state.gameState === "PLAYING" && state.submittedCardPlayerIds.includes(player.id)) {
